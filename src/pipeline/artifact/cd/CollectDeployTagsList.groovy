@@ -14,7 +14,11 @@ class CollectDeployTagsList {
         ArrayList<ArrayList<String>> deployTagsList = []
         infraList.each {
             String infraName, LinkedHashMap infraMap ->
-                deployTagsList << getDeployTags(infraMap)
+                ArrayList<String> deployTags = getDeployTags(infraMap)
+                if (deployTags.size() == 0) {
+                    return
+                }
+                deployTagsList << deployTags
         }
         return new LinkedHashSet(deployTagsList)
     }

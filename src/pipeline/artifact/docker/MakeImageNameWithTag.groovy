@@ -44,7 +44,7 @@ class MakeImageNameWithTag extends Pipeline {
         if (uiValue == null || uiValue.isEmpty()) {
             return []
         }
-        ArrayList<String> tags = uiValue.split(/\./)
+        ArrayList<String> tags = uiValue.split(/,/)
         if (tags.contains(setImageTag.DEFAULT_TAG)) {
             if (tags.size() > 1) {
                 String errorMessage = new StringBuilder()

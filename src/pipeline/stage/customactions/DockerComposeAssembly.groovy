@@ -102,8 +102,7 @@ class DockerComposeAssembly extends CustomAction {
             ArrayList<String> tags = deployTagsList[i]
             StringBuilder TagsDiffComposeUnits = new StringBuilder()
                     .append("TagsDiffComposeUnits:\n")
-                    .append("tags:\n$tags\n")
-                    .append("composeUnits:\n")
+                    .append("tags: $tags\ncomposeUnits:\n")
             composeUnits.each { ComposeUnit composeUnit ->
                 TagsDiffComposeUnits.append(composeUnit.info)
             }

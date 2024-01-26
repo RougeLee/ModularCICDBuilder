@@ -17,12 +17,14 @@ class PrintDockerCompose extends CustomAction {
                 throw new Exception('DockerComposeDeployerMap is null.')
             }
             deployers.each { ArrayList<String> tags, DockerComposeDeployer deployer ->
-                EchoStep(new StringBuilder('\n')
-                        .append("DeployTags: ${tags}\n")
-                        .append("DockerComposeContent:\n")
-                        .append(deployer.dockerComposeYamlGenerator.dockerComposeYamlContent)
-                        .toString()
-                )
+                String content
+                try {
+                    content = deployer.dockerComposeYamlGenerator.dockerComposeYamlContent
+                } catch (Exception e) {
+                    EchoStep("DeployTags: $tags\n$e")
+                    throw e
+                }
+                EchoStep("DeployTags: $tags\nDockerComposeContent:\n$content")
             }
         }
     }

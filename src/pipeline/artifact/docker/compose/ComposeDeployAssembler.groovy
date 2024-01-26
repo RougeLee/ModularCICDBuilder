@@ -73,12 +73,14 @@ class ComposeDeployAssembler extends ShellScriptSplicer {
     }
 
     EOFCommand getComposeDownBash() {
+        String command = "$DOCKER_COMPOSE_CLI down"
         boolean isReturnExitStatus = false
-        return getComposeCommandScript('down', isReturnExitStatus)
+        return getComposeCommandScript(command, isReturnExitStatus)
     }
 
     EOFCommand getComposeUpBash() {
-        return getComposeCommandScript('up -d')
+        String command = "$DOCKER_COMPOSE_CLI pull && $DOCKER_COMPOSE_CLI up -d"
+        return getComposeCommandScript(command)
     }
 
     String getDockerComposeFile() {
@@ -154,7 +156,9 @@ class ComposeDeployAssembler extends ShellScriptSplicer {
     }
 
     private ArrayList<ArrayList<String>> getDeployTagsList() {
-        return new ArrayList<ArrayList<String>>(new CollectDeployTagsList(config).tagsList)
+        return new ArrayList<ArrayList<String>>(
+                new CollectDeployTagsList(config).tagsList
+        )
     }
 
     private EOFCommand getComposeCommandScript(
@@ -176,23 +180,21 @@ class ComposeDeployAssembler extends ShellScriptSplicer {
         String currentDayFile = currentDate.format('yyyy-MM-dd')
         String currentDateTime = currentDate.format('yyyy-MM-dd HH:mm:ss')
         String saveDeploymentLog = new StringBuilder()
-                .append("echo -e \"[${currentDateTime}] ")
-                .append("Exit status: \$${dockerStatus}")
-                .append(", ")
-                .append("Command: ${DOCKER_COMPOSE_CLI} ${command}")
-                .append('\n')
-                .append("\$${dockerLog}\n\" >> ")
+                .append("echo -e \"[$currentDateTime] ")
+                .append("Exit status: \$$dockerStatus, ")
+                .append("Command: $command\n")
+                .append("\$$dockerLog\n\" >> ")
                 .append("${JENKINS_JOB_TIME}_${currentDayFile}.log")
                 .toString()
         ArrayList result = [
-                CD("${composeRootDirPath}/${composeProjectDir}"),
-                [dockerLog + "=\$(${DOCKER_COMPOSE_CLI} ${command} 2>&1)"],
+                CD("$composeRootDirPath/$composeProjectDir"),
+                [dockerLog + "=\$($command 2>&1)"],
                 [dockerStatus + '=\$?'],
-                CD("${composeRootDirPath}/${DEPLOYMENT_LOG_DIR}"),
+                CD("$composeRootDirPath/$DEPLOYMENT_LOG_DIR"),
                 [saveDeploymentLog]
         ]
         if (isReturnExitStatus) {
-            result.add(["exit \$${dockerStatus}"])
+            result.add(["exit \$$dockerStatus"])
         }
         return result
     }

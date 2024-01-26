@@ -27,16 +27,16 @@ class ComposeYamlGenerator {
     ComposeYamlGenerator addTopLevelValues(String name, Map map) {
         switch (name) {
             case EDockerComposeTopLevelKey.networks.name():
-                networks[name] = map
+                networks << map
                 break
             case EDockerComposeTopLevelKey.volumes.name():
-                volumes[name] = map
+                volumes << map
                 break
             case EDockerComposeTopLevelKey.configs.name():
-                configs[name] = map
+                configs << map
                 break
             case EDockerComposeTopLevelKey.secrets.name():
-                secrets[name] = map
+                secrets << map
                 break
             default:
                 throw new IllegalArgumentException("Unknown top level key: $name")

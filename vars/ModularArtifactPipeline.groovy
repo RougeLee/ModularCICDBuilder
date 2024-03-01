@@ -9,7 +9,7 @@ def call(Closure body) {
             master.runCIFlow()
             master.runCDFlow()
         }
-    } catch (error) {
+    } catch (Throwable error) {
         master.catchException(error)
     } finally {
         master.onEnd()

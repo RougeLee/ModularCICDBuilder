@@ -12,7 +12,7 @@ class DockerImageRegistry extends BaseStructure {
         super(config)
     }
 
-    protected void initProcess() {
+    protected void structureInitProcess() {
         setConfigProperty('DOCKER_IMAGE_NAME_MAKER', nameMaker)
     }
 
@@ -21,7 +21,18 @@ class DockerImageRegistry extends BaseStructure {
         if (projectCode == null) {
             throw new Exception('PROJECT_CODE is null.')
         }
-        return new DockerImageNameMaker(projectCode, dockerRegistryURL, dockerRouter)
+        DockerImageNameMaker nameMaker
+        try {
+            nameMaker = new DockerImageNameMaker(
+                    projectCode,
+                    dockerRegistryURL,
+                    dockerRouter
+            )
+        } catch (Throwable e) {
+            EchoStep("DockerImageNameMaker initialize failed.\n$e")
+            nameMaker = null
+        }
+        return nameMaker
     }
 
     private static String getDockerRouter() {

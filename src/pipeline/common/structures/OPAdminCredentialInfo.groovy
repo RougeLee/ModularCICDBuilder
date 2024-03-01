@@ -12,7 +12,7 @@ class OPAdminCredentialInfo extends BaseStructure {
         super(config)
     }
 
-    protected void initProcess() {
+    protected void structureInitProcess() {
         OPADMIN_CREDENTIAL_ID = initProperty(
                 'OPADMIN_CREDENTIAL_ID',
                 OPADMIN_CREDENTIAL_ID

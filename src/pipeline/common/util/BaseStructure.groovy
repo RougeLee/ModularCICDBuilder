@@ -12,15 +12,22 @@ abstract class BaseStructure extends Pipeline {
         subClassName = this.class.name
     }
 
-    abstract protected void initProcess()
+    abstract protected void structureInitProcess()
 
-    void init() {
-        if (isInitPool.get(subClassName)) {
+    void initialize() {
+        EchoStep("${this.class.simpleName} initialize start.")
+        if (isInitPool[subClassName]) {
+            EchoStep("${this.class.simpleName} has been initialized.")
             return
         }
-        initProcess()
-        EchoStep("Init ${this.class.simpleName} success")
-        isInitPool.put(subClassName, true)
+        try {
+            structureInitProcess()
+        } catch (e) {
+            EchoStep("${this.class.simpleName} initialize failed.\n$e")
+            throw e
+        }
+        EchoStep("${this.class.simpleName} initialize success.")
+        isInitPool[subClassName] = true
     }
 
     @SuppressWarnings('unused')
@@ -68,7 +75,7 @@ abstract class BaseStructure extends Pipeline {
     }
 
     protected def asType(Class clazz) {
-        init()
+        initialize()
         if (clazz == LinkedHashMap) {
             return convertToLinkedHashMap()
         }

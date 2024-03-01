@@ -12,7 +12,7 @@ class CommonArg extends BaseStructure {
         super(config)
     }
 
-    protected void initProcess() {
+    protected void structureInitProcess() {
         initProperty('CRON_EXPRESSION', 'H H(0-6) * * *')
         boolean doBuild = (config.containsKey(JENKINSFILE_DO_BUILD)) ?
                 config[JENKINSFILE_DO_BUILD] as boolean : false

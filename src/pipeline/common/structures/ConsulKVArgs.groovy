@@ -11,11 +11,12 @@ class ConsulKVArgs extends BaseStructure {
         super(config)
     }
 
-    protected void initProcess() {
+    protected void structureInitProcess() {
         String host = (config.containsKey(CONSUL_HOST)) ?
                 config[CONSUL_HOST] as String : consulHost
         if (host == null) {
-            throw new Exception(getStepStage('CONSUL_HOST is null'))
+            EchoStep('Consul host is null, use default value.')
+            host = ''
         }
         setConfigProperty('CONSUL_KV', new ConsulKVBaseInfo(host))
     }

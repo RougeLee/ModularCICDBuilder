@@ -1,11 +1,13 @@
 package pipeline.common.util
 
+import pipeline.Pipeline
+
 import java.lang.reflect.Constructor
 
 /**
  * Use the Dynamic Class Loader to load the class.
  */
-class StructuresInitHandler {
+class StructuresInitHandler extends Pipeline {
     static ArrayList structuresPackagePathStageList = [
             'pipeline',
             'common',
@@ -29,17 +31,28 @@ class StructuresInitHandler {
         String baseStructureClassPath = getStructuresPackagePath()
         for (File file in new File(structuresURL.toURI()).listFiles()) {
             String fileName = file.name
-            String className = fileName.substring(
-                    0,
-                    fileName.lastIndexOf('.')
-            )
+            String className = fileName.substring(0, fileName.lastIndexOf('.'))
             String classPath = "${baseStructureClassPath}.${className}"
-            Class structureClass = classLoader.loadClass(classPath)
-            Constructor structureConstructor = structureClass
-                    .getDeclaredConstructor(LinkedHashMap.class)
-            BaseStructure structureInstance = structureConstructor
-                    .newInstance(config) as BaseStructure
-            structureInstance.init()
+            try {
+                initStructure(classLoader, classPath, config)
+            } catch (e) {
+                EchoStep("initStructure failed. classPath: $classPath\n$e")
+                throw e
+            }
         }
+    }
+
+    static void initStructure(
+            ClassLoader classLoader,
+            String classPath,
+            LinkedHashMap config
+    ) {
+        Class clazz = classLoader.loadClass(classPath)
+        Constructor constructor = clazz.getDeclaredConstructor(LinkedHashMap.class)
+        def instance = (BaseStructure) constructor.newInstance(config)
+        if (instance == null) {
+            throw new RuntimeException("instance is null. classPath: $classPath")
+        }
+        instance.initialize()
     }
 }

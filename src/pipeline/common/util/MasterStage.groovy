@@ -19,7 +19,7 @@ abstract class MasterStage extends Pipeline {
 
     abstract void customInit()
 
-    abstract void catchException(Exception e)
+    abstract void catchException(Throwable e)
 
     void limitedTimeExecution(Closure body) {
         timeoutHandler.setTimeout()
@@ -73,7 +73,7 @@ abstract class MasterStage extends Pipeline {
         }
     }
 
-    protected void echoException(Exception e) {
+    protected void echoException(Throwable e) {
         def stackTraceMessageBuilder = new StringBuilder(e.toString())
         ArrayList stackTrace = e.getStackTrace()
         if (stackTrace.size() > 0) {

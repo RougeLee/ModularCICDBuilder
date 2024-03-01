@@ -59,7 +59,7 @@ abstract class ConfigMethods extends BaseStructure {
         return ConstConfigSb.toString()
     }
 
-    protected void initProcess() {
+    protected void structureInitProcess() {
         StructuresInitHandler.initAllStructures(config)
         doMapToField()
     }

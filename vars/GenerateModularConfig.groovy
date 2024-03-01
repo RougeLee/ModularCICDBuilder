@@ -9,7 +9,7 @@ static Config getConfig(Script script, Closure body) {
     body()
     checkConfigMap(bodyToMap)
     def config = new Config(bodyToMap)
-    config.init()
+    config.initialize()
     return config
 }
 

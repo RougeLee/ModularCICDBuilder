@@ -44,7 +44,7 @@ class Master extends MasterStage {
         }
     }
 
-    void catchException(Exception e) {
+    void catchException(Throwable e) {
         echoException(e)
         currentBuild.result = 'FAILURE'
     }

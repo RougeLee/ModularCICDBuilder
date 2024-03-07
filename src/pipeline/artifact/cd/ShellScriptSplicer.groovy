@@ -9,15 +9,15 @@ class ShellScriptSplicer {
     }
 
     static ArrayList<String> CD(String dirPath) {
-        return ["cd ${dirPath}"]
+        return ["cd $dirPath"]
     }
 
     static ArrayList<String> mkdirWithOwner(String mkdirDirPath, String owner) {
         return [
-                "if [ ! -d \"${mkdirDirPath}\" ]; then",
-                "  mkdir -p ${mkdirDirPath}",
-                "  chown ${owner}:${owner} ${mkdirDirPath}",
-                'fi'
+                "if [ ! -d \"$mkdirDirPath\" ]; then",
+                "  mkdir -p $mkdirDirPath",
+                'fi',
+                "  chown $owner:$owner $mkdirDirPath"
         ]
     }
 

@@ -32,10 +32,14 @@ class Manager extends Pipeline {
     }
 
     static ArrayList<StrategyTuple> getStrategyList(Config config) {
+        ArrayList<StrategyTuple> strategyList = []
         if (config.MODULE == null) {
-            return []
+            return strategyList
         }
-        return getModuleStrategyList(config)
+        stage('ModuleStrategy Init') {
+            strategyList = getModuleStrategyList(config)
+        }
+        return strategyList
     }
 
     private static ArrayList<StrategyTuple> getModuleStrategyList(Config config) {
@@ -44,16 +48,20 @@ class Manager extends Pipeline {
                 config,
                 config.MODULE_ARG_MAP
         ) as IGetStrategyList
-        return moduleStrategyObject.getStrategyList()
+        try {
+            return moduleStrategyObject.getStrategyList()
+        } catch (Throwable e) {
+            EchoStep("Module $config.MODULE get the StrategyList fail:\n$e")
+            throw e
+        }
     }
 
     private static Class getModuleStrategyClass(Config config) {
-        def module = config.MODULE
-        String ClassName = "${StrategyPath}.${module}"
+        String ClassName = "$StrategyPath.$config.MODULE"
         try {
             return ModuleBase.getClassLoader().loadClass(ClassName)
         } catch (Exception e) {
-            EchoStep("Module class not found: ${module}\n${e}")
+            EchoStep("Module class not found: $config.MODULE\n$e")
             throw e
         }
     }

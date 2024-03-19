@@ -5,18 +5,22 @@ class Department {
     public static final String PROJECT_NAME = 'ProjectName'
     public static final String INFRA_NAME = 'InfraName'
     public static final String CONSUL_KV_TOKEN = 'ConsulKVToken'
-    static final ArrayList<String> needToCopyArgNameList = [
+    private static final ArrayList<String> needToCopyArgNameList = [
             CREDENTIAL_ID,
-            CONSUL_KV_TOKEN,
             PROJECT_NAME,
-            INFRA_NAME
+            INFRA_NAME,
+            CONSUL_KV_TOKEN,
     ]
 
     static LinkedHashMap getDepartmentArgs(LinkedHashMap moduleArgs) {
         LinkedHashMap departmentArgs = [:]
-        needToCopyArgNameList.each { String key ->
+        for (String key : needToCopyArgNameList) {
             departmentArgs[key] = moduleArgs[key]
-            assert departmentArgs[key] != null
+            if (departmentArgs[key] != null) {
+                continue
+            }
+            String message = "departmentArgs: key = $key is not defined."
+            throw new IllegalArgumentException(message)
         }
         return departmentArgs
     }

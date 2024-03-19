@@ -1,11 +1,11 @@
 package pipeline.stage.customactions
 
-import pipeline.artifact.ansible.AnsibleConsulImageManager
 import pipeline.artifact.docker.cli.CommandActuator
 import pipeline.artifact.docker.cli.run.RunConfig
 import pipeline.common.util.Config
 import pipeline.common.consul.ConsulKVInfo
 import pipeline.common.util.ProjectInfraState
+import pipeline.stage.flowstages.BuildAnsibleConsulImageStage
 import tools.AnsibleParser
 import pipeline.stage.stagedatas.ConsulKVStage as ConsulKVStageData
 import pipeline.stage.util.CustomAction
@@ -18,8 +18,6 @@ class ConsulKVStage extends CustomAction {
     private static final String TargetTaskName = 'Print ConsulKV Value'
     private static final String AnsibleHostsFileName = 'ansible_hosts.yaml'
     private static final String AnsiblePlaybookFileName = 'ansible_playbook.yaml'
-    private static final String DockerImage = 'ansible-consul'
-    private static final String AnsibleWorkdir = '/ansible'
     private static final String targetKey = 'localhost'
 
     void main(Config config, StageData stageData) {
@@ -37,7 +35,7 @@ class ConsulKVStage extends CustomAction {
     ) {
         return {
             makeAnsibleYamlFile(stageArgs)
-            checkAnsibleConsulImage()
+            checkAnsibleConsulImage(config)
             settingConfigInfraState(config, stageArgs, generateTemplate())
         }
     }
@@ -52,7 +50,7 @@ class ConsulKVStage extends CustomAction {
     }
 
     private static String getPlaybookContent(LinkedHashMap stageArgs) {
-        return AnsibleConsulKV.getConsulKVPlaybookYaml(
+        return AnsibleConsulKV.getGetConsulValuePlaybookYaml(
                 getConsulKVInfo(stageArgs),
                 TargetTaskName
         )
@@ -62,8 +60,8 @@ class ConsulKVStage extends CustomAction {
         return stageArgs[ConsulKVStageData.CONSUL_KV_INFO] as ConsulKVInfo
     }
 
-    private static void checkAnsibleConsulImage() {
-        new AnsibleConsulImageManager(DockerImage, AnsibleWorkdir).main()
+    private static void checkAnsibleConsulImage(Config config) {
+        new BuildAnsibleConsulImageStage().main(config)
     }
 
     private static ProjectInfraTemplate generateTemplate() {
@@ -71,11 +69,20 @@ class ConsulKVStage extends CustomAction {
     }
 
     private static String runAnsiblePlaybook() {
-        RunConfig dockerRunConfig = new RunConfig(DockerImage, dockerRunCommand)
-                .setRM(true)
+        def dockerRunConfig = new RunConfig(
+                BuildAnsibleConsulImageStage.DOCKER_IMAGE,
+                dockerRunCommand
+        )
+        dockerRunConfig.setRM(true)
+                .setNetworkMode('host')
                 .addVolumeString(convertVolumeString(AnsibleHostsFileName))
                 .addVolumeString(convertVolumeString(AnsiblePlaybookFileName))
-        return new CommandActuator(dockerRunConfig).run()
+        try {
+            return new CommandActuator(dockerRunConfig).run()
+        } catch (Exception e) {
+            EchoStep("Failed to run ansible-playbook.\nError Message: ${e.message}")
+            throw e
+        }
     }
 
     private static String getDockerRunCommand() {
@@ -83,7 +90,7 @@ class ConsulKVStage extends CustomAction {
     }
 
     private static String convertVolumeString(String fileName) {
-        return "./$fileName:$AnsibleWorkdir/$fileName"
+        return "./$fileName:${BuildAnsibleConsulImageStage.ANSIBLE_WORK_DIR}/$fileName"
     }
 
     private static ProjectInfraTemplate parseAnsibleResult(String playbookResult) {

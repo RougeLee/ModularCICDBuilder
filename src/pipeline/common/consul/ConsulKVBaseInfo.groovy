@@ -14,11 +14,9 @@ class ConsulKVBaseInfo {
     }
 
     static String getKey(String projectName, String infraName) {
-        return new StringBuilder(ProjectNamePrefix)
-                .append(projectName)
-                .append('/')
-                .append(infraName)
-                .append('/')
+        return new StringBuilder()
+                .append("${ProjectNamePrefix}${projectName}")
+                .append("/${infraName}/")
                 .append(consulRouterPath)
                 .toString()
     }

@@ -7,37 +7,29 @@ import pipeline.common.ui.panels.SudoChoice
 import pipeline.common.util.Config
 import pipeline.common.util.StrategyTuple
 import pipeline.module.lib.ConsulKVStrategyTuple
-import pipeline.module.lib.Department
 import pipeline.module.util.StrategyList
 import pipeline.stage.util.StageData
 
 @SuppressWarnings('unused')
 class ConsulKVRemoteCommandWithDeployTags extends StrategyList {
-    private ArrayList<StrategyTuple> strategyList = []
 
     ConsulKVRemoteCommandWithDeployTags(
             Config config,
             LinkedHashMap<Serializable, Serializable> moduleArgs
     ) {
         super(config, moduleArgs)
-        argNameList.addAll([
-                Department.CREDENTIAL_ID,
-                Department.PROJECT_NAME,
-                Department.INFRA_NAME,
-                Department.CONSUL_KV_TOKEN
-        ])
     }
 
     ArrayList<StrategyTuple> getStrategyList() {
-        verifyArgDict(moduleArgs)
+        verifyModuleArgs()
         applyConsulKVStrategyTuple()
         applySSHRemoteCommandExecution()
-        return strategyList
+        return strategyTuples
     }
 
     private void applyConsulKVStrategyTuple() {
         ConsulKVStrategyTuple.applyConsulKVStrategyTuple(
-                strategyList,
+                strategyTuples,
                 config,
                 moduleArgs
         )
@@ -55,6 +47,6 @@ class ConsulKVRemoteCommandWithDeployTags extends StrategyList {
                 isSudo              : new SudoChoice(config).sudoChoice
         ])
         sshRemoteCMD.Desc = 'Execute SSHRemoteCommand'
-        strategyList << new StrategyTuple([sshRemoteCMD])
+        strategyTuples << new StrategyTuple([sshRemoteCMD])
     }
 }

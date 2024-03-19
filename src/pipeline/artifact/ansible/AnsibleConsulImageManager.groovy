@@ -11,15 +11,14 @@ class AnsibleConsulImageManager extends Pipeline {
         this.ansibleWorkdir = ansibleWorkdir
     }
 
-    void main() {
-        if (ansibleConsulImageExistStatus == 0) {
-            return
-        }
-        buildDockerfile()
+    boolean getIsImageExist() {
+        String cmd = "docker image ls | grep -q $dockerImage"
+        String resultStatus = sh(script: cmd, returnStatus: true)
+        return resultStatus.toInteger() == 0
     }
 
-    private void buildDockerfile() {
-        EchoStep("${dockerImage} not found. Building Dockerfile...")
+    void buildDockerfile() {
+        EchoStep("$dockerImage not found. Building Dockerfile...")
         new DockerfileMaker(getAnsibleDockerfile(), dockerImage)
                 .main()
                 .removeDockerfile()
@@ -27,14 +26,5 @@ class AnsibleConsulImageManager extends Pipeline {
 
     private GenerateAnsibleDockerfile getAnsibleDockerfile() {
         return new GenerateAnsibleDockerfile().setAnsibleWorkdir(ansibleWorkdir)
-    }
-
-    private int getAnsibleConsulImageExistStatus() {
-        String result = sh(script: checkAnsibleConsulImageCommand, returnStatus: true)
-        return result.toInteger()
-    }
-
-    private getCheckAnsibleConsulImageCommand() {
-        return "docker image ls | grep -q ${dockerImage}"
     }
 }

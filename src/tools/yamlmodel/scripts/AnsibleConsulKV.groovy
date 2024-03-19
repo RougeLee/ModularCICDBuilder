@@ -16,11 +16,60 @@ static String getInventoryLocalHostYaml() {
     return ansibleHostSB.toString()
 }
 
-static String getConsulKVPlaybookYaml(
+static String getSetConsulValuePlaybookYaml(
+        ConsulKVInfo consulKVInfo,
+        LinkedHashMap setJson
+) {
+    def setConsulValuePlayBook = [
+            name : 'Set Consul Value',
+            hosts: 'localhost',
+            vars : [
+                    set_json: setJson
+            ],
+            tasks: [
+                    getSetConsulValueTask(consulKVInfo)
+            ]
+    ]
+    return getPlaybookYaml([setConsulValuePlayBook])
+}
+
+static def getSetConsulValueTask(ConsulKVInfo consulKVInfo) {
+    return [
+            name     : 'Set Consul Value',
+            consul_kv: [
+                    host : consulKVInfo.host,
+                    token: consulKVInfo.token,
+                    key  : consulKVInfo.key,
+                    value: "{{ set_json | to_json }}",
+            ]
+    ]
+
+}
+
+static String getGetConsulValuePlaybookYaml(
         ConsulKVInfo consulKVInfo,
         String targetTaskName
 ) {
-    LinkedHashMap connectToConsulTask = [
+    def getConsulValuePlayBook = [
+            name : 'Get Consul Value',
+            hosts: 'localhost',
+            tasks: [
+                    getConnectToConsulTask(consulKVInfo),
+                    getSetAsDictionaryStructureTask(),
+                    getDebugTask(targetTaskName)
+            ]
+    ]
+    return getPlaybookYaml([getConsulValuePlayBook])
+}
+
+static String getPlaybookYaml(ArrayList<LinkedHashMap> playbooks) {
+    def playbookSB = new StringBuilder()
+    new YamlModel(playbooks).applyStringBuilder(playbookSB)
+    return playbookSB.toString()
+}
+
+static def getConnectToConsulTask(ConsulKVInfo consulKVInfo) {
+    return [
             name     : 'Connect to Consul',
             consul_kv: [
                     host   : consulKVInfo.host,
@@ -30,24 +79,24 @@ static String getConsulKVPlaybookYaml(
             ],
             register : 'retrieved_value'
     ]
-    String setFactValue = "\"{{ new_dictionary|default({}) | combine({item.Key: item.Value | from_json }) }}\""
-    Map set_fact = [new_dictionary: setFactValue]
-    LinkedHashMap setAsDictionaryStructureTask = [
+}
+
+static def getSetAsDictionaryStructureTask() {
+    def defineDictionary = 'new_dictionary|default({})'
+    def combine = 'combine({item.Key: item.Value | from_json })'
+    def dictionaryValue = "\"{{ $defineDictionary | $combine }}\""
+    def setFactValue = [new_dictionary: dictionaryValue]
+    return [
             name    : 'Set as dictionary structure',
-            set_fact: set_fact,
+            set_fact: setFactValue,
             loop    : "\"{{ retrieved_value.data }}\"",
             no_log  : true
     ]
-    LinkedHashMap debugTask = [
+}
+
+static def getDebugTask(String targetTaskName) {
+    return [
             name : targetTaskName,
             debug: [msg: "\"{{ new_dictionary }}\""]
     ]
-    LinkedHashMap playBook = [
-            name : 'Get Consul Value',
-            hosts: 'localhost',
-            tasks: [connectToConsulTask, setAsDictionaryStructureTask, debugTask]
-    ]
-    def playbookSB = new StringBuilder()
-    new YamlModel([playBook]).applyStringBuilder(playbookSB)
-    return playbookSB.toString()
 }

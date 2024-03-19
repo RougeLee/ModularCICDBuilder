@@ -15,8 +15,9 @@ class ConsulKVArgs extends BaseStructure {
         String host = (config.containsKey(CONSUL_HOST)) ?
                 config[CONSUL_HOST] as String : consulHost
         if (host == null) {
-            EchoStep('Consul host is null, use default value.')
-            host = ''
+            EchoStep('Warning: Consul host is null,CONSUL_KV will not be initialized.')
+            setConfigProperty('CONSUL_KV', null)
+            return
         }
         setConfigProperty('CONSUL_KV', new ConsulKVBaseInfo(host))
     }

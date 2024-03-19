@@ -38,21 +38,14 @@ class GenerateAnsibleDockerfile {
     String generateContent() {
         def generator = new DockerfileGenerator()
         generator.from(fromImage)
-                .run(generateAnsibleInstallCommand)
-                .run(generateAptUpdateCommand)
+                .run('pip install ansible python-consul')
+                .run('apt-get update && apt-get install -y wget unzip')
                 .run(generateConsulDownloadCommand)
-                .run(generateAptCleanCommand)
+                .run('ln -s /usr/local/bin/python3 /usr/bin/python3')
+                .run('apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*')
                 .workdir(ansibleWorkdir)
                 .cmd(defaultCommand)
         return generator.generate()
-    }
-
-    private static String getGenerateAnsibleInstallCommand() {
-        return 'pip install ansible python-consul'
-    }
-
-    private static String getGenerateAptUpdateCommand() {
-        return 'apt-get update && apt-get install -y wget unzip'
     }
 
     private String getGenerateConsulDownloadCommand() {
@@ -64,9 +57,5 @@ class GenerateAnsibleDockerfile {
                 .append(' && mv consul /usr/local/bin/ && rm -f ')
                 .append(zipFileName)
                 .toString()
-    }
-
-    private static String getGenerateAptCleanCommand() {
-        return 'apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*'
     }
 }

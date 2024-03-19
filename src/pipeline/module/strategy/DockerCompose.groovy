@@ -9,7 +9,6 @@ import pipeline.artifact.docker.compose.DeployersConvertExecutorsManager
 import pipeline.common.util.Config
 import pipeline.common.util.StrategyTuple
 import pipeline.module.lib.ConsulKVStrategyTuple
-import pipeline.module.lib.Department
 import pipeline.module.lib.DockerComposeLib
 import pipeline.module.util.StrategyList
 import pipeline.stage.stagedatas.DeploymentPreparation
@@ -24,27 +23,20 @@ import pipeline.stage.stagedatas.ServiceVerification
 class DockerCompose extends StrategyList {
     private LinkedHashMap<ArrayList<String>, DockerComposeExecutor> executors = [:]
     private LinkedHashMap<ArrayList<String>, DockerComposeDeployer> deployers = [:]
-    private ArrayList<StrategyTuple> strategyList = []
 
     DockerCompose(Config config, LinkedHashMap<Serializable, Serializable> moduleArgs) {
         super(config, moduleArgs)
-        argNameList.addAll([
-                Department.CREDENTIAL_ID,
-                Department.PROJECT_NAME,
-                Department.INFRA_NAME,
-                Department.CONSUL_KV_TOKEN,
-                DockerComposeLib.DOCKER_COMPOSE_TOP_LEVEL,
-                DockerComposeLib.DOCKER_COMPOSE_SERVICES
-        ])
+        requiredArgNames << DockerComposeLib.DOCKER_COMPOSE_TOP_LEVEL
+        requiredArgNames << DockerComposeLib.DOCKER_COMPOSE_SERVICES
     }
 
     ArrayList<StrategyTuple> getStrategyList() {
-        verifyArgDict(moduleArgs)
+        verifyModuleArgs()
         applyExecutorsWithDeployersModuleArgs()
         applyConsulKVStrategyTuple()
         applyComposeAssemblyStrategyTuple()
         applyDockerComposeStageList()
-        return strategyList
+        return strategyTuples
     }
 
     private void applyExecutorsWithDeployersModuleArgs() {
@@ -54,14 +46,14 @@ class DockerCompose extends StrategyList {
 
     private void applyConsulKVStrategyTuple() {
         ConsulKVStrategyTuple.applyConsulKVStrategyTuple(
-                strategyList,
+                strategyTuples,
                 config,
                 moduleArgs
         )
     }
 
     private void applyComposeAssemblyStrategyTuple() {
-        strategyList << new StrategyTuple([
+        strategyTuples << new StrategyTuple([
                 new DockerComposeAssembly(moduleArgs),
                 new PrintDockerCompose(moduleArgs)
         ])
@@ -76,7 +68,7 @@ class DockerCompose extends StrategyList {
         dockerComposeStageList << new DeploymentPreparation(moduleArgs, setupManager)
         dockerComposeStageList << new ServiceLaunch(moduleArgs, setupManager)
         dockerComposeStageList << new ServiceVerification(moduleArgs, setupManager)
-        strategyList << new StrategyTuple(dockerComposeStageList)
+        strategyTuples << new StrategyTuple(dockerComposeStageList)
     }
 
     private DeploymentSetupManager generateDeploymentSetupManager() {

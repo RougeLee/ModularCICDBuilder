@@ -25,6 +25,9 @@ class ConsulKVStage extends StageData {
     }
 
     void init() {
+        if (this.consulKVBaseInfo == null) {
+            throw new IllegalArgumentException('ConsulKVBaseInfo is null.')
+        }
         StageArgs[CREDENTIAL_ID] = moduleArgs[CREDENTIAL_ID]
         StageArgs[CONSUL_KV_INFO] = consulKVInfo
     }

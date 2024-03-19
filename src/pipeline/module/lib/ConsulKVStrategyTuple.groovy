@@ -20,6 +20,11 @@ class ConsulKVStrategyTuple {
     }
 
     private static LinkedHashMap getDepartmentArgs(LinkedHashMap moduleArgs) {
-        return Department.getDepartmentArgs(moduleArgs)
+        try {
+            return Department.getDepartmentArgs(moduleArgs)
+        } catch (IllegalArgumentException e) {
+            String message = "ConsulKVStrategyTuple.getDepartmentArgs:\n$e.message"
+            throw new IllegalArgumentException(message)
+        }
     }
 }

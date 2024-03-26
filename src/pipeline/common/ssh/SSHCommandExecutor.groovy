@@ -77,13 +77,13 @@ class SSHCommandExecutor extends SSHBase implements ICommand {
         return prepareCommand(command, cmd)
     }
 
-    private static String getSudoPrefix() {
-        return opadminCredential ? sudoWithPasswordPrefix : "sudo -i "
+    private String getSudoPrefix() {
+        return SSHRemoteCredential ? sudoWithPasswordPrefix : "sudo -i "
     }
 
-    private static String getSudoWithPasswordPrefix() {
+    private String getSudoWithPasswordPrefix() {
         return withOpadminCredentials {
-            "echo ${getEnvProperty(OPADMIN_PASSWORD)} | sudo -Si "
+            "echo ${getEnvProperty(SSHRemotePasswordKey)} | sudo -Si "
         }
     }
 
@@ -99,11 +99,11 @@ class SSHCommandExecutor extends SSHBase implements ICommand {
 
     @NonCPS
     protected void getSSHCommandPrefix() {
-        String cmdPrefix = "ssh -J ${bastionHost} ${remoteHost}"
-        if (opadminCredential == null) {
-            this.cmdPrefix = cmdPrefix
-        } else {
-            this.cmdPrefix = "sshpass -p \$${OPADMIN_PASSWORD} ${cmdPrefix}"
-        }
+        String cmdPrefix = bastionHost ?
+                "ssh -J $bastionHost $remoteHost" :
+                "ssh $remoteHost"
+        this.cmdPrefix = SSHRemoteCredential ?
+                "sshpass -p \$$SSHRemotePasswordKey $cmdPrefix" :
+                cmdPrefix
     }
 }

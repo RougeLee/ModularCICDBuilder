@@ -10,12 +10,12 @@ class SSHRemote implements ICommandExecutor {
     protected final String credentialID
     protected final LinkedHashSet<String> credentialList = []
     protected final String nodeID
+    protected final String remoteHost
     protected String bastionHost
-    protected String remoteHost
     protected IEOFCommand eofCommandExecutor
     protected ICommand commandExecutor
     protected IFileTransfer fileTransfer
-    private Config config
+    private final Config config
 
     SSHRemote(
             Config config,
@@ -26,17 +26,12 @@ class SSHRemote implements ICommandExecutor {
         this.config = config
         this.nodeID = nodeID
         this.credentialID = credentialID
-        this.credentialList.addAll(config.JENKINS_CREDENTIAL_LIST)
-        this.credentialList << credentialID
         this.remoteHost = remoteHost
     }
 
     SSHRemote init() {
-        bastionHost = SSHKeyHandler.getBastionHost(
-                nodeID,
-                credentialID,
-                remoteHost
-        )
+        initBastionHost()
+        this.credentialList.addAll(config.EXTRA_JENKINS_CREDENTIAL_LIST)
         eofCommandExecutor = new EOFCommandExecutor(
                 nodeID,
                 credentialList,
@@ -84,5 +79,18 @@ class SSHRemote implements ICommandExecutor {
 
     String transferFile(TransferFile transferFile) {
         return fileTransfer.transferFile(transferFile)
+    }
+
+    private void initBastionHost() {
+        if (credentialID == null) {
+            bastionHost = null
+            return
+        }
+        this.credentialList << credentialID
+        bastionHost = SSHKeyHandler.getBastionHost(
+                nodeID,
+                credentialID,
+                remoteHost
+        )
     }
 }

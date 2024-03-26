@@ -100,8 +100,8 @@ class ComposeDeploymentConfig extends Pipeline {
     private String initDeployOwner() {
         String owner = null
         node('master') {
-            withCredentials(config.OPADMIN_CREDENTIAL) {
-                owner = getEnvProperty(config.OPADMIN_USER_NAME)
+            withCredentials(config.SSH_REMOTE_CREDENTIAL) {
+                owner = getEnvProperty(config.SSH_REMOTE_USER_NAME)
             }
             if (owner == null || owner.isEmpty()) {
                 throw new Exception("Can not get deploy owner")

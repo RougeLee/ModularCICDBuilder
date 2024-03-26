@@ -19,7 +19,8 @@ class DockerImageRegistry extends BaseStructure {
     private DockerImageNameMaker getNameMaker() {
         String projectCode = config.PROJECT_CODE as String
         if (projectCode == null) {
-            throw new Exception('PROJECT_CODE is null.')
+            EchoStep('Warning: PROJECT_CODE is null. DockerImageNameMaker will not be initialized.')
+            return null
         }
         DockerImageNameMaker nameMaker
         try {

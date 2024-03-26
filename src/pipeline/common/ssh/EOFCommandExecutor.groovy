@@ -18,10 +18,10 @@ class EOFCommandExecutor extends SSHBase implements IEOFCommand {
     @NonCPS
     protected void getSSHCommandPrefix() {
         String cmdPrefix = "ssh -J ${bastionHost} ${remoteHost}"
-        if (opadminCredential == null) {
+        if (SSHRemoteCredential == null) {
             this.cmdPrefix = cmdPrefix
         } else {
-            this.cmdPrefix = "sshpass -p \$${OPADMIN_PASSWORD} ${cmdPrefix}"
+            this.cmdPrefix = "sshpass -p \$${SSHRemotePasswordKey} ${cmdPrefix}"
         }
     }
 
@@ -65,12 +65,12 @@ class EOFCommandExecutor extends SSHBase implements IEOFCommand {
         return prepareCommand(builder.toString())
     }
 
-    private static String getExecEOFScriptCommand(
+    private String getExecEOFScriptCommand(
             EOFCommand eofCommand,
             String workingDir
     ) {
         return !eofCommand.isSudo ? "$workingDir/$EOF_SH" :
-                "echo $envOpadminPassword | sudo -Si $workingDir/$EOF_SH"
+                "echo $ENVRemotePassword | sudo -Si $workingDir/$EOF_SH"
     }
 
     private String prepareCommand(String cmd) {

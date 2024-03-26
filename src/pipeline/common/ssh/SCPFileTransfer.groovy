@@ -39,10 +39,10 @@ class SCPFileTransfer extends SSHBase implements IFileTransfer {
     @NonCPS
     protected void getSSHCommandPrefix() {
         String cmdPrefix = "scp -o ProxyJump=${bastionHost} "
-        if (opadminCredential == null) {
+        if (SSHRemoteCredential == null) {
             this.cmdPrefix = cmdPrefix
         } else {
-            this.cmdPrefix = "sshpass -p \$${OPADMIN_PASSWORD} ${cmdPrefix}"
+            this.cmdPrefix = "sshpass -p \$${SSHRemotePasswordKey} ${cmdPrefix}"
         }
     }
 

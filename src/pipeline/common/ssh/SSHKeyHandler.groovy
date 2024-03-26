@@ -105,7 +105,7 @@ class SSHKeyHandler extends Pipeline {
             String remoteHost
     ) {
         String cmd = "$KEYSCAN -t rsa $remoteHost"
-        if (bastionCredentialId == null) {
+        if (bastionHost == null) {
             executeRegisterRemoteHost(cmd, remoteHost)
             return
         }

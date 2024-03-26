@@ -1,11 +1,11 @@
 package pipeline.common.ssh
 
-import com.cloudbees.groovy.cps.NonCPS
 import pipeline.Pipeline
 import pipeline.common.util.Config
 
 abstract class SSHBase extends Pipeline {
-    protected static final String OPADMIN_PASSWORD = Config.OPADMIN_PASSWORD
+    protected final ArrayList SSHRemoteCredential = Config.SSH_REMOTE_CREDENTIAL
+    protected final String SSHRemotePasswordKey = Config.SSH_REMOTE_PASSWORD
     protected final ArrayList<String> credentialList
     protected final String nodeID
     protected final String bastionHost
@@ -44,19 +44,14 @@ abstract class SSHBase extends Pipeline {
         }
     }
 
-    protected static def withOpadminCredentials(Closure closure) {
-        if (opadminCredential == null) {
+    protected def withOpadminCredentials(Closure closure) {
+        if (SSHRemoteCredential == null) {
             closure()
         }
-        return withCredentials(opadminCredential, closure)
+        return withCredentials(SSHRemoteCredential, closure)
     }
 
-    @NonCPS
-    protected static ArrayList getOpadminCredential() {
-        return Config.OPADMIN_CREDENTIAL
-    }
-
-    protected static String getEnvOpadminPassword() {
-        return getEnvProperty(OPADMIN_PASSWORD)
+    protected String getENVRemotePassword() {
+        return getEnvProperty(SSHRemotePasswordKey)
     }
 }
